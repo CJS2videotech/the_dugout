@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>The Dugout</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--card:#161c26;--card2:#1c2435;
+  --border:rgba(255,255,255,0.08);--text:#e8edf5;--muted:#6e7d96;
+  --green:#22c55e;--accent:#ffc52f;--btn-bg:#12284b;--btn-text:#ffc52f;
+  --btn-border:#ffc52f;--stripe:rgba(255,197,47,0.06);--hdr-border:#ffc52f;
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+
+/* HEADER */
+.hdr{background:var(--card);border-bottom:3px solid var(--hdr-border);position:sticky;top:0;z-index:100;transition:border-color .3s}
+.hdr-inner{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem}
+.logo{width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .3s;font-family:'Oswald',sans-serif;font-weight:700;font-size:14px;color:#0d1117}
+.hdr-info{flex:1}
+.hdr-title{font-family:'Oswald',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;line-height:1.1}
+.hdr-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.live-col{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.live-row{display:flex;align-items:center;gap:4px;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1.5px;color:var(--muted)}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+#hdr-time{font-size:11px;color:var(--muted)}
+
+/* VIEWER TABS */
+.viewer-wrap{background:var(--card2);border-bottom:1px solid var(--border)}
+.viewer-inner{max-width:680px;margin:0 auto;padding:.625rem 1rem;display:flex;align-items:center;gap:.5rem}
+.vlbl{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.vbtn{padding:5px 20px;border-radius:4px;border:2px solid var(--border);font-family:'Oswald',sans-serif;font-size:.82rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;background:transparent;color:var(--muted);transition:all .2s}
+.vbtn:hover:not(.von){color:var(--text);border-color:rgba(255,255,255,.15)}
+.von{background:var(--btn-bg);color:var(--btn-text);border-color:var(--btn-border)}
+
+/* FACT CARD */
+.fact-wrap{max-width:680px;margin:0 auto;padding:.875rem 1rem 0}
+.fact-card{background:var(--card);border-radius:10px;border-left:4px solid var(--accent);padding:.875rem 1rem;display:flex;gap:.875rem;align-items:flex-start;transition:border-color .3s}
+.fact-icon{font-size:1.4rem;flex-shrink:0;margin-top:1px}
+.fact-region{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent);margin-bottom:3px;transition:color .3s}
+.fact-text{font-size:13px;line-height:1.55;color:var(--text)}
+.fact-place{font-size:11px;color:var(--muted);margin-top:3px}
+.fact-dots{display:flex;gap:5px;margin-top:.5rem}
+.fdot{width:6px;height:6px;border-radius:50%;background:var(--border);cursor:pointer;border:none;transition:background .2s;padding:0}
+.fdot.on{background:var(--accent)}
+
+/* MAIN */
+main{max-width:680px;margin:0 auto;padding:1.25rem 1rem 3rem}
+
+/* SECTIONS */
+.sec{margin-top:1.75rem}
+.sec:first-child{margin-top:.75rem}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+.sec-title{display:flex;align-items:center;gap:7px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted)}
+.pip{width:6px;height:6px;border-radius:50%}
+
+/* REFRESH */
+.rbtn{display:flex;align-items:center;gap:5px;background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:5px;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .15s}
+.rbtn:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+.rbtn:active{transform:scale(.96)}
+.spin{width:10px;height:10px;border:1.5px solid rgba(255,255,255,.08);border-top-color:var(--muted);border-radius:50%;animation:spin .7s linear infinite;display:none}
+.is-loading .spin{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* GAME CARDS */
+.gcard{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.875rem 1rem;margin-bottom:.625rem;border-left:3px solid transparent}
+.gcard.gc-cubs{border-left-color:#cc3433}
+.gcard.gc-brew{border-left-color:var(--accent)}
+.gcard.gc-live{border-left-color:var(--green)}
+.live-pill{display:inline-flex;align-items:center;gap:4px;background:rgba(34,197,94,.1);color:var(--green);font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1.5px;padding:2px 8px;border-radius:20px;margin-bottom:.5rem}
+.lpulse{width:5px;height:5px;border-radius:50%;background:var(--green);animation:blink 1.4s infinite}
+.matchup{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:.5rem}
+.tm{display:flex;flex-direction:column;gap:2px}
+.tm.home{text-align:right}
+.tm-abbr{font-family:'Oswald',sans-serif;font-size:1.2rem;font-weight:700;letter-spacing:1px;line-height:1}
+.tm-name{font-size:11px;color:var(--muted)}
+.tm-rec{font-size:11px;color:var(--muted);font-family:'Oswald',sans-serif}
+.dim{opacity:.35}
+.smid{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:70px}
+.score{font-family:'Oswald',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;line-height:1;white-space:nowrap}
+.vs-txt{font-size:12px;color:var(--muted)}
+.gstat{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:center}
+.gstat.live{color:var(--green)}
+.gfooter{margin-top:.6rem;padding-top:.5rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+.no-data{text-align:center;padding:1.5rem;color:var(--muted);font-style:italic;font-size:13px;background:var(--card);border-radius:10px;border:1px solid var(--border)}
+.err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:.75rem 1rem;color:#f87171;font-size:13px;text-align:center}
+
+/* STANDINGS */
+.tbl-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:.6rem .75rem;text-align:right;background:var(--card2);border-bottom:1px solid var(--border)}
+thead th:first-child{text-align:left}
+tbody td{padding:.55rem .75rem;text-align:right;color:var(--muted);border-bottom:1px solid var(--border)}
+tbody td:first-child{text-align:left;color:var(--text);font-family:'Oswald',sans-serif;font-size:.875rem;letter-spacing:.5px}
+tbody tr:last-child td{border-bottom:none}
+tbody td.bld{color:var(--text)}
+tr.hi-cubs td{background:rgba(14,51,134,.12)}
+tr.hi-cubs td:first-child{color:#7aaeff}
+tr.hi-brew td{background:var(--stripe)}
+tr.hi-brew td:first-child{color:var(--accent)}
+.stk{font-family:'Oswald',sans-serif;font-size:10px;padding:1px 7px;border-radius:3px;letter-spacing:.5px}
+.stk-w{background:rgba(34,197,94,.12);color:#4ade80}
+.stk-l{background:rgba(239,68,68,.1);color:#f87171}
+
+/* SCHEDULE */
+.dlbl{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:1rem 0 .375rem;padding-left:2px}
+
+/* DEBUG PANEL */
+.debug-wrap{max-width:680px;margin:.75rem auto 0;padding:0 1rem}
+.debug-toggle{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:4px 10px;border-radius:5px;cursor:pointer;display:flex;align-items:center;gap:5px}
+.debug-panel{display:none;background:#0a0f18;border:1px solid var(--border);border-radius:8px;padding:.75rem;margin-top:.5rem;font-family:monospace;font-size:11px;color:#6ee7b7;max-height:200px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+.debug-panel.open{display:block}
+
+footer{text-align:center;padding:1.5rem 1rem;font-size:11px;color:var(--muted);border-top:1px solid var(--border);max-width:680px;margin:0 auto}
+@media(max-width:400px){.tm-abbr{font-size:1rem}.score{font-size:1.25rem}.smid{min-width:58px}main{padding:1rem .75rem 3rem}.vbtn{padding:5px 14px}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="logo" id="hdr-logo">⚾</div>
+    <div class="hdr-info">
+      <div class="hdr-title">The Dugout</div>
+      <div class="hdr-sub">Cubs &amp; Brewers Live Tracker</div>
+    </div>
+    <div class="live-col">
+      <div class="live-row"><span class="pulse"></span>LIVE FEED</div>
+      <div id="hdr-time">–</div>
+    </div>
+  </div>
+</div>
+
+<div class="viewer-wrap">
+  <div class="viewer-inner">
+    <span class="vlbl">Viewing as</span>
+    <button class="vbtn" id="btn-cj" onclick="setViewer('cj')">CJ</button>
+    <button class="vbtn von" id="btn-andrea" onclick="setViewer('andrea')">Andrea</button>
+  </div>
+</div>
+
+<div class="fact-wrap">
+  <div class="fact-card" id="fact-card">
+    <div class="fact-icon" id="fact-icon">🍺</div>
+    <div style="flex:1">
+      <div class="fact-region" id="fact-region"></div>
+      <div class="fact-text" id="fact-text"></div>
+      <div class="fact-place" id="fact-place"></div>
+      <div class="fact-dots" id="fact-dots"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DEBUG PANEL -->
+<div class="debug-wrap">
+  <button class="debug-toggle" onclick="toggleDebug()">▶ Debug Log</button>
+  <div class="debug-panel" id="debug-panel"></div>
+</div>
+
+<main>
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-title"><span class="pip" style="background:var(--green)"></span>Today's Scoreboard</div>
+      <button class="rbtn" id="rbtn" onclick="refreshAll()">
+        <div class="spin" id="spin"></div><span>Refresh</span>
+      </button>
+    </div>
+    <div id="scores-el"><div class="no-data">Loading…</div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-title"><span class="pip" style="background:var(--accent)" id="pip-gold"></span>NL Central Standings</div>
+    </div>
+    <div id="standings-el"><div class="no-data">Loading…</div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-title"><span class="pip" style="background:#58a6ff"></span><span id="sched-lbl">Next 14 Days</span></div>
+    </div>
+    <div id="schedule-el"><div class="no-data">Loading…</div></div>
+  </div>
+</main>
+
+<footer>Data via MLB Stats API · Auto-refreshes every 60s · Made for CJ &amp; Andrea ❤</footer>
+
+<script>
+/* ─── THEMES ─── */
+const THEMES={
+  andrea:{accent:'#ffc52f',hdr:'#ffc52f',btnBg:'#12284b',btnText:'#ffc52f',btnBorder:'#ffc52f',stripe:'rgba(255,197,47,0.06)',logo:'#0d1117'},
+  cj:{accent:'#4a8fe8',hdr:'#cc3433',btnBg:'#0e3386',btnText:'#ffffff',btnBorder:'#cc3433',stripe:'rgba(74,143,232,0.06)',logo:'#ffffff'}
+};
+
+function applyTheme(v){
+  const t=THEMES[v],s=document.documentElement.style;
+  s.setProperty('--accent',t.accent);
+  s.setProperty('--btn-bg',t.btnBg);
+  s.setProperty('--btn-text',t.btnText);
+  s.setProperty('--btn-border',t.btnBorder);
+  s.setProperty('--stripe',t.stripe);
+  s.setProperty('--hdr-border',t.hdr);
+  document.getElementById('hdr-logo').style.background=t.accent;
+  document.getElementById('hdr-logo').style.color=t.logo;
+  document.getElementById('fact-card').style.borderLeftColor=t.accent;
+  document.getElementById('pip-gold').style.background=t.accent;
+}
+
+/* ─── FACTS ─── */
+const FACTS={
+  andrea:[
+    {icon:'🍺',region:'Southern Wisconsin',text:'Milwaukee is home to over 30 craft breweries, carrying on a tradition started by German immigrants in the 1840s. American Family Field sits right in that brewing heartland.',place:'Milwaukee, WI'},
+    {icon:'🧀',region:'Cheese Country',text:'Wisconsin produces over 3 billion pounds of cheese a year — more than any other state. Cheese curds and Friday Night Fish Fry are practically religious experiences here.',place:'Statewide, WI'},
+    {icon:'🦢',region:'Lake Country',text:'Within 30 miles of Milwaukee are over 800 lakes. Pewaukee Lake is a local favorite — crystal-clear water, summer bonfires, and a Brewers game on every radio.',place:'Waukesha County, WI'},
+    {icon:'🌉',region:'Historic Third Ward',text:'The Milwaukee Riverwalk winds 3 miles through the Historic Third Ward, lined with farm-to-table restaurants and local brewpubs. Best post-game neighborhood in the Midwest.',place:'Milwaukee, WI'},
+    {icon:'🎡',region:'Wisconsin State Fair',text:'The Wisconsin State Fair draws over 1 million visitors every August in West Allis. Cream puffs have been the unofficial mascot since 1924 — they sell over 400,000 every year.',place:'West Allis, WI'},
+    {icon:'🏆',region:'Small Market, Big Heart',text:'Milwaukee is the smallest MLB market by metro area, yet the Brewers have made the playoffs 8 times since 2007. Loyal doesn\'t begin to cover it.',place:'Milwaukee, WI'},
+  ],
+  cj:[
+    {icon:'🏟️',region:'Northern Illinois',text:'Wrigley Field opened in 1914 — the second-oldest MLB park still in use. The famous ivy on the outfield walls was planted in 1937 by Bill Veeck.',place:'Wrigleyville, Chicago'},
+    {icon:'🍕',region:'Deep Dish Country',text:'Lou Malnati\'s on Wells Street is a 5-minute walk from Wrigley. The Cubs faithful have been fueling post-game celebrations there since 1971.',place:'River North, Chicago'},
+    {icon:'🚇',region:'The L Brown Line',text:'The Chicago "L" Brown Line stops at Addison, one block from Wrigley\'s main entrance — the most iconic stadium commute in all of baseball.',place:'Lakeview, Chicago'},
+    {icon:'🌊',region:'Lake Michigan Shore',text:'The Chicago lakefront trail runs 18 uninterrupted miles. From Montrose Beach on a clear day you can spot the Wrigley scoreboard glowing on the horizon.',place:'Lincoln Park, Chicago'},
+    {icon:'🌭',region:'Hot Dog Culture',text:'A proper Chicago-style hot dog has exactly seven toppings on a poppy-seed bun. Asking for ketchup at any self-respecting stand is a social offense north of the Loop.',place:'North Side, Chicago'},
+    {icon:'🎸',region:'Chicago Blues',text:'Buddy Guy\'s Legends on S. Wabash has kept Chicago blues alive since 1989. The city\'s music scene runs as deep as its ivy-covered outfield wall.',place:'South Loop, Chicago'},
+  ]
+};
+
+let viewer='andrea',factIdx=0,factTimer=null;
+
+function setViewer(v){
+  viewer=v; factIdx=0;
+  applyTheme(v);
+  document.getElementById('btn-cj').className='vbtn'+(v==='cj'?' von':'');
+  document.getElementById('btn-andrea').className='vbtn'+(v==='andrea'?' von':'');
+  renderFact();
+  clearInterval(factTimer);
+  factTimer=setInterval(()=>{factIdx=(factIdx+1)%FACTS[viewer].length;renderFact();},12000);
+  document.getElementById('sched-lbl').textContent=v==='cj'?'Cubs — Next 14 Days':'Brewers — Next 14 Days';
+  document.getElementById('schedule-el').innerHTML='<div class="no-data">Loading\u2026</div>';
+  loadSchedule();
+}
+
+function renderFact(){
+  const f=FACTS[viewer][factIdx];
+  document.getElementById('fact-icon').textContent=f.icon;
+  document.getElementById('fact-region').textContent=f.region;
+  document.getElementById('fact-text').textContent=f.text;
+  document.getElementById('fact-place').textContent=f.place;
+  document.getElementById('fact-dots').innerHTML=
+    FACTS[viewer].map((_,i)=>`<button class="fdot${i===factIdx?' on':''}" onclick="goFact(${i})"></button>`).join('');
+}
+function goFact(i){factIdx=i;renderFact();}
+
+/* ─── DEBUG ─── */
+const debugLines=[];
+function dbg(msg){
+  const ts=new Date().toLocaleTimeString();
+  debugLines.push(`[${ts}] ${msg}`);
+  if(debugLines.length>50) debugLines.shift();
+  const p=document.getElementById('debug-panel');
+  p.textContent=debugLines.join('\n');
+  p.scrollTop=p.scrollHeight;
+}
+function toggleDebug(){
+  document.getElementById('debug-panel').classList.toggle('open');
+}
+
+/* ─── MLB STATS API ─── */
+const MLB='https://statsapi.mlb.com/api/v1';
+const CUBS_ID=112, BREW_ID=158;
+// NL Central division id = 205
+const NLC_IDS=new Set([112,158,138,113,134]); // Cubs,Brewers,Cardinals,Reds,Pirates
+
+function pad(n){return String(n).padStart(2,'0')}
+function isoDate(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function fmtDate(str){
+  const d=new Date(str+'T12:00:00');
+  return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+}
+function fmtTime(isoStr){
+  return new Date(isoStr).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZoneName:'short'});
+}
+
+function teamCls(awayId,homeId){
+  if(awayId===CUBS_ID||homeId===CUBS_ID) return 'gc-cubs';
+  if(awayId===BREW_ID||homeId===BREW_ID) return 'gc-brew';
+  return '';
+}
+
+function renderGame(g, showDate){
+  const away=g.teams.away, home=g.teams.home;
+  const awayId=away.team.id, homeId=home.team.id;
+  const status=g.status.abstractGameState; // Preview, Live, Final
+  const isLive=status==='Live', isFinal=status==='Final';
+  const awayS=away.score??'', homeS=home.score??'';
+  const hasScore=isLive||isFinal;
+  const awayW=isFinal&&parseInt(awayS)>parseInt(homeS);
+  const homeW=isFinal&&parseInt(homeS)>parseInt(awayS);
+  const awayRec=away.leagueRecord?`${away.leagueRecord.wins}-${away.leagueRecord.losses}`:'';
+  const homeRec=home.leagueRecord?`${home.leagueRecord.wins}-${home.leagueRecord.losses}`:'';
+  const cls=teamCls(awayId,homeId);
+  let ss='',sc='',pill='';
+  if(isLive){
+    const inn=g.linescore?.currentInningOrdinal||'';
+    const half=g.linescore?.inningHalf||'';
+    ss=`${half} ${inn}`.trim();
+    sc='live';
+    pill='<div class="live-pill"><span class="lpulse"></span>LIVE</div>';
+  } else if(isFinal){
+    ss='Final';
+  } else {
+    ss=fmtTime(g.gameDate);
+  }
+  const venue=g.venue?.name||'';
+  const dateStr=showDate?`<span>${fmtDate(g.gameDate.split('T')[0])}</span>`:'';
+  return `<div class="gcard ${cls}${isLive?' gc-live':''}">
+    ${pill}
+    <div class="matchup">
+      <div class="tm away">
+        <div class="tm-abbr${isFinal&&!awayW?' dim':''}">${away.team.abbreviation||away.team.name}</div>
+        <div class="tm-name">${away.team.teamName||away.team.name}</div>
+        <div class="tm-rec">${awayRec}</div>
+      </div>
+      <div class="smid">
+        ${hasScore?`<div class="score">${awayS}&thinsp;–&thinsp;${homeS}</div>`:`<div class="vs-txt">vs</div>`}
+        <div class="gstat ${sc}">${ss}</div>
+      </div>
+      <div class="tm home">
+        <div class="tm-abbr${isFinal&&!homeW?' dim':''}">${home.team.abbreviation||home.team.name}</div>
+        <div class="tm-name">${home.team.teamName||home.team.name}</div>
+        <div class="tm-rec">${homeRec}</div>
+      </div>
+    </div>
+    <div class="gfooter"><span>${venue}</span>${dateStr}</div>
+  </div>`;
+}
+
+/* ── SCORES ── */
+async function loadScores(){
+  const el=document.getElementById('scores-el');
+  const today=isoDate(new Date());
+  const url=`${MLB}/schedule?sportId=1&date=${today}&teamId=${CUBS_ID},${BREW_ID}&hydrate=team,linescore,leagueRecord`;
+  dbg(`SCORES fetch: ${url}`);
+  try{
+    const r=await fetch(url);
+    dbg(`SCORES status: ${r.status}`);
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data=await r.json();
+    dbg(`SCORES dates: ${data.dates?.length}, totalGames: ${data.totalGames}`);
+    const games=data.dates?.[0]?.games||[];
+    dbg(`SCORES games found: ${games.length}`);
+    if(!games.length){el.innerHTML='<div class="no-data">No Cubs or Brewers games today.</div>';return;}
+    el.innerHTML=games.map(g=>renderGame(g,false)).join('');
+  }catch(e){
+    dbg(`SCORES ERROR: ${e.message}`);
+    el.innerHTML='<div class="err">Could not load scores. Check debug log.</div>';
+  }
+}
+
+/* ── STANDINGS ── */
+async function loadStandings(){
+  const el=document.getElementById('standings-el');
+  const yr=new Date().getFullYear();
+  // divisionId 205 = NL Central
+  const url=`${MLB}/standings?leagueId=104&season=${yr}&standingsTypes=regularSeason&hydrate=team,division&divisionId=205`;
+  dbg(`STANDINGS fetch: ${url}`);
+  try{
+    const r=await fetch(url);
+    dbg(`STANDINGS status: ${r.status}`);
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data=await r.json();
+    dbg(`STANDINGS records: ${data.records?.length}`);
+    if(!data.records?.length) throw new Error('No records in response');
+
+    // Find the NL Central record group
+    const nlc=data.records.find(rec=>
+      rec.division?.id===205||
+      rec.teamRecords?.some(t=>NLC_IDS.has(t.team.id))
+    );
+    if(!nlc) throw new Error('NL Central group not found');
+    dbg(`STANDINGS NLC teams: ${nlc.teamRecords?.length}`);
+
+    const rows=[...nlc.teamRecords].sort((a,b)=>parseFloat(b.winningPercentage)-parseFloat(a.winningPercentage));
+
+    const html=rows.map(tr=>{
+      const id=tr.team.id;
+      const isCubs=id===CUBS_ID, isBrew=id===BREW_ID;
+      const rc=isCubs?'hi-cubs':isBrew?'hi-brew':'';
+      const streak=tr.streak?.streakCode||'';
+      const sc=streak.startsWith('W')?'stk-w':'stk-l';
+      const gb=tr.gamesBack==='-'||tr.gamesBack==='0'?'—':tr.gamesBack;
+      const pct=parseFloat(tr.winningPercentage).toFixed(3).replace(/^0/,'.');
+      const abbr=tr.team.abbreviation||tr.team.teamCode?.toUpperCase()||tr.team.name;
+      return `<tr class="${rc}">
+        <td>${abbr}</td>
+        <td class="bld">${tr.wins}</td>
+        <td>${tr.losses}</td>
+        <td class="bld">${pct}</td>
+        <td>${gb}</td>
+        <td>${streak?`<span class="stk ${sc}">${streak}</span>`:''}</td>
+      </tr>`;
+    }).join('');
+
+    el.innerHTML=`<div class="tbl-wrap"><table>
+      <thead><tr><th>Team</th><th>W</th><th>L</th><th>PCT</th><th>GB</th><th>Stk</th></tr></thead>
+      <tbody>${html}</tbody>
+    </table></div>`;
+  }catch(e){
+    dbg(`STANDINGS ERROR: ${e.message}`);
+    el.innerHTML='<div class="err">Could not load standings. Check debug log.</div>';
+  }
+}
+
+/* ── SCHEDULE ── */
+async function loadSchedule(){
+  const el=document.getElementById('schedule-el');
+  const today=new Date(); today.setHours(0,0,0,0);
+  const end=new Date(today); end.setDate(end.getDate()+14);
+  const startStr=isoDate(today);
+  const endStr=isoDate(end);
+  const teamId=viewer==='cj'?CUBS_ID:BREW_ID;
+  const url=`${MLB}/schedule?sportId=1&startDate=${startStr}&endDate=${endStr}&teamId=${teamId}&hydrate=team,leagueRecord&gameType=R`;
+  dbg(`SCHEDULE fetch: ${url}`);
+  try{
+    const r=await fetch(url);
+    dbg(`SCHEDULE status: ${r.status}`);
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data=await r.json();
+    dbg(`SCHEDULE dates: ${data.dates?.length}, totalGames: ${data.totalGames}`);
+
+    const games=[];
+    const seen=new Set();
+    for(const d of (data.dates||[])){
+      for(const g of (d.games||[])){
+        if(!seen.has(g.gamePk)){seen.add(g.gamePk);games.push({...g,_dateStr:d.date});}
+      }
+    }
+    dbg(`SCHEDULE unique games: ${games.length}`);
+
+    if(!games.length){el.innerHTML='<div class="no-data">No games in the next 14 days.</div>';return;}
+
+    // Group by date
+    const byDate={};
+    for(const g of games){
+      const k=g._dateStr;
+      (byDate[k]=byDate[k]||[]).push(g);
+    }
+
+    let html='';
+    for(const[k,gs] of Object.entries(byDate)){
+      html+=`<div class="dlbl">${fmtDate(k)}</div>`;
+      html+=gs.map(g=>renderGame(g,false)).join('');
+    }
+    el.innerHTML=html;
+  }catch(e){
+    dbg(`SCHEDULE ERROR: ${e.message}`);
+    el.innerHTML='<div class="err">Could not load schedule. Check debug log.</div>';
+  }
+}
+
+/* ── CLOCK ── */
+function tick(){document.getElementById('hdr-time').textContent=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});}
+tick(); setInterval(tick,10000);
+
+/* ── REFRESH ── */
+async function refreshAll(){
+  const btn=document.getElementById('rbtn');
+  btn.classList.add('is-loading');
+  dbg('--- Refresh triggered ---');
+  await Promise.all([loadScores(),loadStandings(),loadSchedule()]);
+  btn.classList.remove('is-loading');
+}
+
+/* ── INIT ── */
+setViewer('andrea');
+refreshAll();
+setInterval(()=>loadScores(),60000);
+</script>
+</body>
+</html>
