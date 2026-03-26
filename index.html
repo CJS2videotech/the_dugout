@@ -36,7 +36,7 @@ document.currentScript.parentNode.insertBefore(link,document.currentScript);
   --green:#22c55e;--accent:#ffc52f;--btn-bg:#12284b;--btn-text:#ffc52f;
   --btn-border:#ffc52f;--stripe:rgba(255,197,47,0.06);--hdr-border:#ffc52f;
 }
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);background-size:cover;background-position:center;background-attachment:fixed;color:var(--text);min-height:100vh;font-size:15px}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);background-size:cover;background-position:center;background-attachment:fixed;color:var(--text);min-height:100vh;font-size:15px;text-shadow:0 1px 4px rgba(0,0,0,0.85)}
 .hdr, .viewer-wrap, .react-wrap, .gcard, .tbl-wrap, .no-data { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 
 /* HEADER */
@@ -218,8 +218,8 @@ footer{text-align:center;padding:1.5rem 1rem;font-size:11px;color:var(--muted);b
 <script>
 /* ─── THEMES ─── */
 const THEMES={
-  andrea:{accent:'#ffc52f',hdr:'#ffc52f',btnBg:'#12284b',btnText:'#ffc52f',btnBorder:'#ffc52f',stripe:'rgba(255,197,47,0.06)',logo:'#0d1117', logoImg:'url("assets/andrea.jpg")', bgImg:'linear-gradient(rgba(13,17,23,0.65), rgba(13,17,23,0.95)), url("assets/Brewers%20field.jpg")'},
-  cj:{accent:'#4a8fe8',hdr:'#cc3433',btnBg:'#0e3386',btnText:'#ffffff',btnBorder:'#cc3433',stripe:'rgba(74,143,232,0.06)',logo:'#ffffff', logoImg:'url("assets/cj.jpg")', bgImg:'linear-gradient(rgba(13,17,23,0.65), rgba(13,17,23,0.95)), url("assets/Cubs%20field.jpg")'}
+  andrea:{accent:'#ffc52f',hdr:'#ffc52f',btnBg:'#12284b',btnText:'#ffc52f',btnBorder:'#ffc52f',stripe:'rgba(255,197,47,0.06)',logo:'#0d1117', logoImg:'url("assets/andrea.jpg")', bgImg:'url("assets/Brewers%20field.jpg")'},
+  cj:{accent:'#4a8fe8',hdr:'#cc3433',btnBg:'#0e3386',btnText:'#ffffff',btnBorder:'#cc3433',stripe:'rgba(74,143,232,0.06)',logo:'#ffffff', logoImg:'url("assets/cj.jpg")', bgImg:'url("assets/Cubs%20field.jpg")'}
 };
 
 function applyTheme(v){
