@@ -59,16 +59,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .vbtn:hover:not(.von){color:var(--text);border-color:rgba(255,255,255,.15)}
 .von{background:var(--btn-bg);color:var(--btn-text);border-color:var(--btn-border)}
 
-/* FACT CARD */
-.fact-wrap{max-width:680px;margin:0 auto;padding:.875rem 1rem 0}
-.fact-card{background:var(--card);border-radius:10px;border-left:4px solid var(--accent);padding:.875rem 1rem;display:flex;gap:.875rem;align-items:flex-start;transition:border-color .3s}
-.fact-icon{font-size:1.4rem;flex-shrink:0;margin-top:1px}
-.fact-region{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent);margin-bottom:3px;transition:color .3s}
-.fact-text{font-size:13px;line-height:1.55;color:var(--text)}
-.fact-place{font-size:11px;color:var(--muted);margin-top:3px}
-.fact-dots{display:flex;gap:5px;margin-top:.5rem}
-.fdot{width:6px;height:6px;border-radius:50%;background:var(--border);cursor:pointer;border:none;transition:background .2s;padding:0}
-.fdot.on{background:var(--accent)}
+/* REACTIONS */
+.react-wrap{margin-top:1.5rem;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem}
+.react-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
+.rct-btn{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px 4px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text);cursor:pointer;transition:all .2s;text-align:center}
+.rct-btn:hover{background:var(--accent);color:#000;border-color:var(--accent)}
+.emoji-flake{position:fixed;top:-10vh;z-index:9999;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{0%{transform:translateY(0) rotate(0deg)}100%{transform:translateY(120vh) rotate(360deg)}}
+@media(max-width:500px){.react-grid{grid-template-columns:repeat(2,1fr)}}
 
 /* MAIN */
 main{max-width:680px;margin:0 auto;padding:1.25rem 1rem 3rem}
@@ -145,7 +143,7 @@ footer{text-align:center;padding:1.5rem 1rem;font-size:11px;color:var(--muted);b
 
 <div class="hdr">
   <div class="hdr-inner">
-    <div class="logo" id="hdr-logo">⚾</div>
+    <div class="logo" id="hdr-logo"></div>
     <div class="hdr-info">
       <div class="hdr-title">The Dugout</div>
       <div class="hdr-sub">Cubs &amp; Brewers Live Tracker</div>
@@ -165,17 +163,7 @@ footer{text-align:center;padding:1.5rem 1rem;font-size:11px;color:var(--muted);b
   </div>
 </div>
 
-<div class="fact-wrap">
-  <div class="fact-card" id="fact-card">
-    <div class="fact-icon" id="fact-icon">🍺</div>
-    <div style="flex:1">
-      <div class="fact-region" id="fact-region"></div>
-      <div class="fact-text" id="fact-text"></div>
-      <div class="fact-place" id="fact-place"></div>
-      <div class="fact-dots" id="fact-dots"></div>
-    </div>
-  </div>
-</div>
+<!-- Fact Section removed, layout naturally elevated -->
 
 <!-- DEBUG PANEL -->
 <div class="debug-wrap">
@@ -192,6 +180,21 @@ footer{text-align:center;padding:1.5rem 1rem;font-size:11px;color:var(--muted);b
       </button>
     </div>
     <div id="scores-el"><div class="no-data">Loading…</div></div>
+  </div>
+
+  <div class="sec react-wrap">
+    <div class="sec-head" style="margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)">
+      <div class="sec-title"><span class="pip" style="background:#f43f5e"></span>Multimedia Reaction Engine</div>
+    </div>
+    <div class="react-grid">
+      <button class="rct-btn" onclick="playReac('win')">Winning</button>
+      <button class="rct-btn" onclick="playReac('lose')">Losing</button>
+      <button class="rct-btn" onclick="playReac('hr')">Home Runs</button>
+      <button class="rct-btn" onclick="playReac('badcall')">Bad Call</button>
+      <button class="rct-btn" onclick="playReac('wtf')">What?!</button>
+      <button class="rct-btn" onclick="playReac('unbelievable')">Unbelievable</button>
+    </div>
+    <!-- Emojis will spawn as overlay -->
   </div>
 
   <div class="sec">
@@ -214,8 +217,8 @@ footer{text-align:center;padding:1.5rem 1rem;font-size:11px;color:var(--muted);b
 <script>
 /* ─── THEMES ─── */
 const THEMES={
-  andrea:{accent:'#ffc52f',hdr:'#ffc52f',btnBg:'#12284b',btnText:'#ffc52f',btnBorder:'#ffc52f',stripe:'rgba(255,197,47,0.06)',logo:'#0d1117'},
-  cj:{accent:'#4a8fe8',hdr:'#cc3433',btnBg:'#0e3386',btnText:'#ffffff',btnBorder:'#cc3433',stripe:'rgba(74,143,232,0.06)',logo:'#ffffff'}
+  andrea:{accent:'#ffc52f',hdr:'#ffc52f',btnBg:'#12284b',btnText:'#ffc52f',btnBorder:'#ffc52f',stripe:'rgba(255,197,47,0.06)',logo:'#0d1117', logoImg:'url("App Projects/Photos/IMG_3372.jpg")'},
+  cj:{accent:'#4a8fe8',hdr:'#cc3433',btnBg:'#0e3386',btnText:'#ffffff',btnBorder:'#cc3433',stripe:'rgba(74,143,232,0.06)',logo:'#ffffff', logoImg:'url("App Projects/Photos/IMG_3371.jpg")'}
 };
 
 function applyTheme(v){
@@ -226,59 +229,54 @@ function applyTheme(v){
   s.setProperty('--btn-border',t.btnBorder);
   s.setProperty('--stripe',t.stripe);
   s.setProperty('--hdr-border',t.hdr);
-  document.getElementById('hdr-logo').style.background=t.accent;
-  document.getElementById('hdr-logo').style.color=t.logo;
-  document.getElementById('fact-card').style.borderLeftColor=t.accent;
+  
+  const logoEl = document.getElementById('hdr-logo');
+  logoEl.style.backgroundImage = t.logoImg;
+  logoEl.style.backgroundSize = 'cover';
+  logoEl.style.backgroundPosition = 'center top';
+  logoEl.style.border = `2px solid ${t.accent}`;
+  
   document.getElementById('pip-gold').style.background=t.accent;
   // Update status bar color on iPhone
   document.querySelector('meta[name="theme-color"]').setAttribute('content', t.accent);
 }
 
-/* ─── FACTS ─── */
-const FACTS={
-  andrea:[
-    {icon:'🍺',region:'Southern Wisconsin',text:'Milwaukee is home to over 30 craft breweries, carrying on a tradition started by German immigrants in the 1840s. American Family Field sits right in that brewing heartland.',place:'Milwaukee, WI'},
-    {icon:'🧀',region:'Cheese Country',text:'Wisconsin produces over 3 billion pounds of cheese a year — more than any other state. Cheese curds and Friday Night Fish Fry are practically religious experiences here.',place:'Statewide, WI'},
-    {icon:'🦢',region:'Lake Country',text:'Within 30 miles of Milwaukee are over 800 lakes. Pewaukee Lake is a local favorite — crystal-clear water, summer bonfires, and a Brewers game on every radio.',place:'Waukesha County, WI'},
-    {icon:'🌉',region:'Historic Third Ward',text:'The Milwaukee Riverwalk winds 3 miles through the Historic Third Ward, lined with farm-to-table restaurants and local brewpubs. Best post-game neighborhood in the Midwest.',place:'Milwaukee, WI'},
-    {icon:'🎡',region:'Wisconsin State Fair',text:'The Wisconsin State Fair draws over 1 million visitors every August in West Allis. Cream puffs have been the unofficial mascot since 1924 — they sell over 400,000 every year.',place:'West Allis, WI'},
-    {icon:'🏆',region:'Small Market, Big Heart',text:'Milwaukee is the smallest MLB market by metro area, yet the Brewers have made the playoffs 8 times since 2007. Loyal doesn\'t begin to cover it.',place:'Milwaukee, WI'},
-  ],
-  cj:[
-    {icon:'🏟️',region:'Northern Illinois',text:'Wrigley Field opened in 1914 — the second-oldest MLB park still in use. The famous ivy on the outfield walls was planted in 1937 by Bill Veeck.',place:'Wrigleyville, Chicago'},
-    {icon:'🍕',region:'Deep Dish Country',text:'Lou Malnati\'s on Wells Street is a 5-minute walk from Wrigley. The Cubs faithful have been fueling post-game celebrations there since 1971.',place:'River North, Chicago'},
-    {icon:'🚇',region:'The L Brown Line',text:'The Chicago "L" Brown Line stops at Addison, one block from Wrigley\'s main entrance — the most iconic stadium commute in all of baseball.',place:'Lakeview, Chicago'},
-    {icon:'🌊',region:'Lake Michigan Shore',text:'The Chicago lakefront trail runs 18 uninterrupted miles. From Montrose Beach on a clear day you can spot the Wrigley scoreboard glowing on the horizon.',place:'Lincoln Park, Chicago'},
-    {icon:'🌭',region:'Hot Dog Culture',text:'A proper Chicago-style hot dog has exactly seven toppings on a poppy-seed bun. Asking for ketchup at any self-respecting stand is a social offense north of the Loop.',place:'North Side, Chicago'},
-    {icon:'🎸',region:'Chicago Blues',text:'Buddy Guy\'s Legends on S. Wabash has kept Chicago blues alive since 1989. The city\'s music scene runs as deep as its ivy-covered outfield wall.',place:'South Loop, Chicago'},
-  ]
+/* ─── REACTIONS ENGINE ─── */
+const EMOJIS = {
+  win: ['🏆','🎉','🍺','🙌'],
+  lose: ['💔','😭','📉','🤦','👎','☹️'],
+  hr: ['⚾','🚀','🔥','🎇'],
+  badcall: ['👨‍🦯','🗑️','😤','😡'],
+  wtf: ['🤯','❓','😵','🥶'],
+  unbelievable: ['😱','🚨','👀','🧨']
 };
+function playReac(key){
+  const set = EMOJIS[key];
+  if(!set) return;
+  for(let i=0;i<40;i++){
+    const e=document.createElement('div');
+    e.className='emoji-flake';
+    e.innerText=set[Math.floor(Math.random()*set.length)];
+    e.style.left=Math.random()*100+'vw';
+    e.style.fontSize=(Math.random()*1.5+1.5)+'rem';
+    e.style.animationDuration=(Math.random()*2+2)+'s';
+    e.style.animationDelay=(Math.random()*0.5)+'s';
+    document.body.appendChild(e);
+    setTimeout(()=>e.remove(), 4500);
+  }
+}
 
-let viewer='andrea',factIdx=0,factTimer=null;
+let viewer='andrea';
 
 function setViewer(v){
-  viewer=v; factIdx=0;
+  viewer=v;
   applyTheme(v);
   document.getElementById('btn-cj').className='vbtn'+(v==='cj'?' von':'');
   document.getElementById('btn-andrea').className='vbtn'+(v==='andrea'?' von':'');
-  renderFact();
-  clearInterval(factTimer);
-  factTimer=setInterval(()=>{factIdx=(factIdx+1)%FACTS[viewer].length;renderFact();},12000);
   document.getElementById('sched-lbl').textContent=v==='cj'?'Cubs — Next 14 Days':'Brewers — Next 14 Days';
   document.getElementById('schedule-el').innerHTML='<div class="no-data">Loading\u2026</div>';
   loadSchedule();
 }
-
-function renderFact(){
-  const f=FACTS[viewer][factIdx];
-  document.getElementById('fact-icon').textContent=f.icon;
-  document.getElementById('fact-region').textContent=f.region;
-  document.getElementById('fact-text').textContent=f.text;
-  document.getElementById('fact-place').textContent=f.place;
-  document.getElementById('fact-dots').innerHTML=
-    FACTS[viewer].map((_,i)=>`<button class="fdot${i===factIdx?' on':''}" onclick="goFact(${i})"></button>`).join('');
-}
-function goFact(i){factIdx=i;renderFact();}
 
 /* ─── DEBUG ─── */
 const debugLines=[];
