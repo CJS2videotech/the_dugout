@@ -72,6 +72,7 @@ body::before{content:'';position:fixed;top:0;left:0;width:100vw;height:100vh;bac
 
 /* MAIN */
 main{max-width:680px;margin:0 auto;padding:1.25rem 1rem 3rem}
+.roster-banner{width:100%;max-width:180px;height:auto;border-radius:10px;border:2px solid var(--accent);box-shadow:0 6px 16px rgba(0,0,0,0.5);margin:1.5rem auto;display:block;background:var(--bg)}
 
 /* SECTIONS */
 .sec{margin-top:1.75rem}
@@ -176,12 +177,24 @@ footer{text-align:center;padding:1.5rem 1rem;font-size:11px;color:var(--muted);b
 <main>
   <div class="sec">
     <div class="sec-head">
-      <div class="sec-title"><span class="pip" style="background:var(--green)"></span>Today's Scoreboard</div>
-      <button class="rbtn" id="rbtn" onclick="refreshAll()">
-        <div class="spin" id="spin"></div><span>Refresh</span>
-      </button>
+      <div class="sec-title"><span class="pip" style="background:var(--green)"></span><span id="scoreboard-title">Today's Scoreboard</span></div>
+      <div style="display:flex;gap:5px;">
+        <button class="rbtn" id="yesterday-btn" onclick="toggleYesterday()">◀ Yesterday</button>
+        <button class="rbtn" id="rbtn" onclick="refreshAll()">
+          <div class="spin" id="spin"></div><span>Refresh</span>
+        </button>
+      </div>
     </div>
     <div id="scores-el"><div class="no-data">Loading…</div></div>
+  </div>
+
+  <img id="roster-banner" class="roster-banner" alt="Team Banner" />
+
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-title"><span class="pip" style="background:var(--accent)" id="pip-trophy"></span>🏆 Daily Leaderboard Trophy</div>
+    </div>
+    <div id="leaderboard-el"><div class="no-data">Calculating...</div></div>
   </div>
 
   <div class="sec react-wrap">
@@ -219,8 +232,8 @@ footer{text-align:center;padding:1.5rem 1rem;font-size:11px;color:var(--muted);b
 <script>
 /* ─── THEMES ─── */
 const THEMES={
-  andrea:{accent:'#ffc52f',hdr:'#ffc52f',btnBg:'#12284b',btnText:'#ffc52f',btnBorder:'#ffc52f',stripe:'rgba(255,197,47,0.06)',logo:'#0d1117', logoImg:'url("assets/andrea.jpg")', bgImg:'url("assets/Brewers%20field.jpg")', bgImgMobile:'url("assets/Brewers%20field%20mobile.jpg")'},
-  cj:{accent:'#4a8fe8',hdr:'#cc3433',btnBg:'#0e3386',btnText:'#ffffff',btnBorder:'#cc3433',stripe:'rgba(74,143,232,0.06)',logo:'#ffffff', logoImg:'url("assets/cj.jpg")', bgImg:'url("assets/Cubs%20field.jpg")', bgImgMobile:'url("assets/Cubs%20field%20mobile.jpg")'}
+  andrea:{accent:'#ffc52f',hdr:'#ffc52f',btnBg:'#12284b',btnText:'#ffc52f',btnBorder:'#ffc52f',stripe:'rgba(255,197,47,0.06)',logo:'#0d1117', logoImg:'url("assets/andrea.jpg")', bgImg:'url("assets/Brewers%20field.jpg")', bgImgMobile:'url("assets/Brewers%20field%20mobile.jpg")', banner:'assets/brewers-banner.gif'},
+  cj:{accent:'#4a8fe8',hdr:'#cc3433',btnBg:'#0e3386',btnText:'#ffffff',btnBorder:'#cc3433',stripe:'rgba(74,143,232,0.06)',logo:'#ffffff', logoImg:'url("assets/cj.jpg")', bgImg:'url("assets/Cubs%20field.jpg")', bgImgMobile:'url("assets/Cubs%20field%20mobile.jpg")', banner:'assets/cubs-banner.gif'}
 };
 
 function applyTheme(v){
@@ -241,7 +254,10 @@ function applyTheme(v){
   logoEl.style.backgroundPosition = 'center top';
   logoEl.style.border = `2px solid ${t.accent}`;
   
+  document.getElementById('roster-banner').src = t.banner;
+  
   document.getElementById('pip-gold').style.background=t.accent;
+  document.getElementById('pip-trophy').style.background=t.accent;
   // Update status bar color on iPhone
   document.querySelector('meta[name="theme-color"]').setAttribute('content', t.accent);
 }
@@ -383,10 +399,24 @@ function renderGame(g, showDate, showPitcher=false){
 }
 
 /* ── SCORES ── */
+let isYesterday = false;
+function toggleYesterday() {
+  isYesterday = !isYesterday;
+  document.getElementById('scoreboard-title').textContent = isYesterday ? "Yesterday's Recap" : "Today's Scoreboard";
+  const btn = document.getElementById('yesterday-btn');
+  btn.innerHTML = isYesterday ? "Today ▶" : "◀ Yesterday";
+  btn.style.color = isYesterday ? "var(--text)" : "var(--muted)";
+  btn.style.borderColor = isYesterday ? "rgba(255,255,255,0.2)" : "var(--border)";
+  loadScores();
+}
+
 async function loadScores(){
   const el=document.getElementById('scores-el');
-  const today=isoDate(new Date());
-  const url=`${MLB}/schedule?sportId=1&date=${today}&teamId=${CUBS_ID},${BREW_ID}&hydrate=team,linescore,leagueRecord,probablePitcher`;
+  const d=new Date();
+  if(isYesterday) d.setDate(d.getDate()-1);
+  const targetDate=isoDate(d);
+  
+  const url=`${MLB}/schedule?sportId=1&date=${targetDate}&teamId=${CUBS_ID},${BREW_ID}&hydrate=team,linescore,leagueRecord,probablePitcher`;
   dbg(`SCORES fetch: ${url}`);
   try{
     const r=await fetch(url);
@@ -505,6 +535,128 @@ async function loadSchedule(){
   }
 }
 
+/* ── LEADERBOARD ENGINE ── */
+async function loadLeaderboard(){
+  const el=document.getElementById('leaderboard-el');
+  const d=new Date(); const year=d.getFullYear();
+  const start=`${year}-03-01`;
+  const end=isoDate(d);
+  const url=`${MLB}/schedule?sportId=1&startDate=${start}&endDate=${end}&teamId=${CUBS_ID},${BREW_ID}&hydrate=team,linescore`;
+  
+  try {
+    const r=await fetch(url);
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data=await r.json();
+    
+    let cubsSeasonRuns = 0; let cubsSeasonHits = 0;
+    let brewSeasonRuns = 0; let brewSeasonHits = 0;
+    let cjTrophies = 0; let andreaTrophies = 0; let ties = 0;
+    
+    let latestWinnerText = '';
+    let latestGameDate = '';
+    
+    function extract(g, tId){
+      if(!g) return {r:0, h:0};
+      const isAway = g.teams.away.team.id === tId;
+      const lsTeam = isAway ? g.linescore?.teams?.away : g.linescore?.teams?.home;
+      return { r: lsTeam?.runs||0, h: lsTeam?.hits||0 };
+    }
+
+    for(const d of data.dates||[]){
+      let tgCubs = null; let tgBrew = null;
+      for(const g of d.games||[]){
+        // Enforce strictly Regular Season games ('R') so we drop all Spring Training math!
+        if(g.gameType !== 'R') continue;
+        
+        const isCubs = g.teams.away.team.id===CUBS_ID || g.teams.home.team.id===CUBS_ID;
+        const isBrew = g.teams.away.team.id===BREW_ID || g.teams.home.team.id===BREW_ID;
+        if(!['S','P','PW'].includes(g.status.statusCode)) {
+          if(isCubs) tgCubs = g;
+          if(isBrew) tgBrew = g;
+        }
+      }
+      
+      // ONLY tally on days both teams actually played an active game!
+      if(tgCubs && tgBrew){
+        const cs = extract(tgCubs, CUBS_ID);
+        const bs = extract(tgBrew, BREW_ID);
+        
+        cubsSeasonRuns += cs.r; cubsSeasonHits += cs.h;
+        brewSeasonRuns += bs.r; brewSeasonHits += bs.h;
+        
+        const cTotal = cs.r + cs.h;
+        const bTotal = bs.r + bs.h;
+        
+        const [yy,mm,dd] = d.date.split('-');
+        const dateObj = new Date(yy, mm-1, dd);
+        latestGameDate = dateObj.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+        
+        if (cTotal > bTotal) {
+           cjTrophies++;
+           latestWinnerText = `CJ secured the 🏆! Cubbies produced ${cs.r} Runs + ${cs.h} Hits (${cTotal} Total) to overpower the Brewers' ${bs.r} Runs + ${bs.h} Hits (${bTotal} Total).`;
+        }
+        else if (bTotal > cTotal) {
+           andreaTrophies++;
+           latestWinnerText = `Andrea secured the 🏆! Brewers produced ${bs.r} Runs + ${bs.h} Hits (${bTotal} Total) to overpower the Cubs' ${cs.r} Runs + ${cs.h} Hits (${cTotal} Total).`;
+        }
+        else {
+           if(cs.r > bs.r) { cjTrophies++; latestWinnerText = `Both matched ${cTotal} perfectly, but CJ snagged the 🏆 on the Runs tie-breaker! (Cubs ${cs.r}R vs Brewers ${bs.r}R)`; }
+           else if(bs.r > cs.r) { andreaTrophies++; latestWinnerText = `Both matched ${bTotal} perfectly, but Andrea snagged the 🏆 on the Runs tie-breaker! (Brewers ${bs.r}R vs Cubs ${cs.r}R)`; }
+           else { ties++; latestWinnerText = `Absolute Dead Heat! Both teams matched exactly with ${cTotal} Total (${cs.r} Runs + ${cs.h} Hits). No trophy awarded.`; }
+        }
+      }
+    }
+    
+    if(cubsSeasonRuns===0 && brewSeasonRuns===0){
+      el.innerHTML=`<div class="no-data">No mutual active games found to calculate season totals yet.</div>`; return;
+    }
+    
+    const targetCubsTotal = cubsSeasonRuns + cubsSeasonHits;
+    const targetBrewTotal = brewSeasonRuns + brewSeasonHits;
+    
+    el.innerHTML = `
+      <div class="gcard" style="border-left:none; text-align:center; padding:1.25rem 1rem;">
+        <div style="font-size:10px; text-transform:uppercase; color:var(--muted); letter-spacing:1px; margin-bottom:15px; opacity:0.7;">Season Long Production (Matched Dates Only)</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; font-family:'Oswald',sans-serif;">
+          <div style="flex:1;text-align:center; color:#4a8fe8; font-size:2rem; font-weight:700; line-height:1;">
+            ${targetCubsTotal}
+            <div style="font-size:11px; font-weight:400; letter-spacing:1px; color:var(--muted); margin-top:4px;">CUBS (CJ)</div>
+            <div style="font-size:10.5px; font-weight:400; font-family:'Inter',sans-serif; color:rgba(255,255,255,0.8); margin-top:5px; padding:3px 0; background:rgba(74,143,232,0.15); border-radius:4px;">
+              ${cubsSeasonRuns} Runs • ${cubsSeasonHits} Hits
+            </div>
+          </div>
+          <div style="font-size:1.5rem; color:var(--muted); opacity:0.4; padding:0 15px;">VS</div>
+          <div style="flex:1;text-align:center; color:#ffc52f; font-size:2rem; font-weight:700; line-height:1;">
+            ${targetBrewTotal}
+            <div style="font-size:11px; font-weight:400; letter-spacing:1px; color:var(--muted); margin-top:4px;">BREWERS (A.)</div>
+            <div style="font-size:10.5px; font-weight:400; font-family:'Inter',sans-serif; color:rgba(255,255,255,0.8); margin-top:5px; padding:3px 0; background:rgba(255,197,47,0.15); border-radius:4px;">
+              ${brewSeasonRuns} Runs • ${brewSeasonHits} Hits
+            </div>
+          </div>
+        </div>
+        
+        <div style="font-size:13px; color:var(--text); background:rgba(0,0,0,0.25); padding:12px; border-radius:6px; font-style:italic; margin-bottom:15px; border-left:3px solid var(--border);">
+          <strong style="color:var(--text); font-style:normal;">Latest Match Recap (${latestGameDate}):</strong><br>
+          <span style="color:var(--muted);">${latestWinnerText}</span>
+        </div>
+        
+        <div style="padding-top:15px; border-top:1px solid rgba(255,255,255,0.1);">
+          <div style="font-size:13px; font-weight:bold; color:var(--text); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">🏆 Ultimate Trophy Cabinet 🏆</div>
+          <div style="display:flex; justify-content:space-around; align-items:center;">
+             <div style="font-size:22px; color:#4a8fe8; font-weight:bold; font-family:'Oswald',sans-serif;">${cjTrophies}</div>
+             <div style="font-size:22px; color:#ffc52f; font-weight:bold; font-family:'Oswald',sans-serif;">${andreaTrophies}</div>
+          </div>
+          ${ties > 0 ? `<div style="font-size:11px; color:var(--border); text-align:center; margin-top:8px;">Dead Heats Documented: ${ties}</div>` : ''}
+        </div>
+      </div>
+    `;
+    
+  }catch(e){
+    dbg(`LEADERBOARD ERROR: ${e.message}`);
+    el.innerHTML='<div class="err">Could not load leaderboard.</div>';
+  }
+}
+
 /* ── CLOCK ── */
 function tick(){document.getElementById('hdr-time').textContent=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});}
 tick(); setInterval(tick,10000);
@@ -514,7 +666,7 @@ async function refreshAll(){
   const btn=document.getElementById('rbtn');
   btn.classList.add('is-loading');
   dbg('--- Refresh triggered ---');
-  await Promise.all([loadScores(),loadStandings(),loadSchedule()]);
+  await Promise.all([loadScores(),loadStandings(),loadSchedule(),loadLeaderboard()]);
   btn.classList.remove('is-loading');
 }
 
